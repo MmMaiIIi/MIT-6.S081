@@ -54,7 +54,7 @@ ls(char *path)
     strcpy(buf, path);
     p = buf+strlen(buf);
     *p++ = '/';
-    while(read(fd, &de, sizeof(de)) == sizeof(de)){
+    while(read(fd, &de, sizeof(de)) == sizeof(de)){ // 文件夹都是de信息吗
       if(de.inum == 0)
         continue;
       memmove(p, de.name, DIRSIZ);

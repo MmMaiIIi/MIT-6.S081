@@ -58,12 +58,12 @@ sys_sleep(void)
   int n;
   uint ticks0;
 
-  if(argint(0, &n) < 0)
+  if(argint(0, &n) < 0) // 从用户空间提取下标为0的参数存储到n这个整数指针中
     return -1;
-  acquire(&tickslock);
+  acquire(&tickslock); // 该资源被relese了才能用
   ticks0 = ticks;
   while(ticks - ticks0 < n){
-    if(myproc()->killed){
+    if(myproc()->killed){ // 当前进程有无终结
       release(&tickslock);
       return -1;
     }
