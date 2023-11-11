@@ -1,10 +1,10 @@
 #include "kernel/types.h"
-#include "kernel/stat.h"
+#include "kernel/stat.h" 
 #include "user/user.h"
-#include "kernel/fs.h"
+#include "kernel/fs.h" 
 
 char*
-fmtname(char *path)
+fmtname(char *path) //  取文件名，并设置空格对齐
 {
   static char buf[DIRSIZ+1];
   char *p;
@@ -15,10 +15,10 @@ fmtname(char *path)
   p++;
 
   // Return blank-padded name.
-  if(strlen(p) >= DIRSIZ)
+  if(strlen(p) >= DIRSIZ) // 人为设置的最长文件名
     return p;
   memmove(buf, p, strlen(p));
-  memset(buf+strlen(p), ' ', DIRSIZ-strlen(p));
+  memset(buf+strlen(p), ' ', DIRSIZ-strlen(p)); // 设置空格保持对齐
   return buf;
 }
 
@@ -27,37 +27,37 @@ ls(char *path)
 {
   char buf[512], *p;
   int fd;
-  struct dirent de;
-  struct stat st;
+  struct dirent de; // fs.h
+  struct stat st;   // stat.h
 
   if((fd = open(path, 0)) < 0){
     fprintf(2, "ls: cannot open %s\n", path);
     return;
   }
-
-  if(fstat(fd, &st) < 0){
+  // 可以直接 stat(path, &st)
+  if(fstat(fd, &st) < 0){ // system call, struct st 接受 文件信息
     fprintf(2, "ls: cannot stat %s\n", path);
     close(fd);
     return;
   }
 
   switch(st.type){
-  case T_FILE:
-    printf("%s %d %d %l\n", fmtname(path), st.type, st.ino, st.size);
+  case T_FILE: // file
+    printf("%s %d %d %l\n", fmtname(path), st.type, st.ino, st.size); // primes 2 2 24720
     break;
 
-  case T_DIR:
-    if(strlen(path) + 1 + DIRSIZ + 1 > sizeof buf){
+  case T_DIR: // directory
+    if(strlen(path) + 1 + DIRSIZ + 1 > sizeof buf){ // 都要+1 留给尾巴的 '\0'
       printf("ls: path too long\n");
       break;
     }
-    strcpy(buf, path);
-    p = buf+strlen(buf);
-    *p++ = '/';
-    while(read(fd, &de, sizeof(de)) == sizeof(de)){ // 文件夹都是de信息吗
+    strcpy(buf, path); // memmove vs strcpy ? memmove更强大，strcpy针对string --> 开始好奇操作系统如何安全地分配内存
+    p = buf+strlen(buf); // 最后一个字符的后一位
+    *p++ = '/'; // p始终指向未初始化的地址
+    while(read(fd, &de, sizeof(de)) == sizeof(de)){ // 发现sizeof只能是偶数
       if(de.inum == 0)
         continue;
-      memmove(p, de.name, DIRSIZ);
+      memmove(p, de.name, DIRSIZ); // p的位置始终没变
       p[DIRSIZ] = 0;
       if(stat(buf, &st) < 0){
         printf("ls: cannot stat %s\n", buf);
