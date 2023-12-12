@@ -62,6 +62,9 @@ sys_sleep(void)
     return -1;
   acquire(&tickslock);
   ticks0 = ticks;
+
+  backtrace();
+
   while(ticks - ticks0 < n){
     if(myproc()->killed){
       release(&tickslock);
@@ -94,4 +97,30 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+
+// store the alarm interval 
+// and the pointer to the handler function 
+// in new fields in the proc structure
+uint64
+sys_sigalarm(void)
+{
+  int ticks;
+  void (*handler)(void);
+  if(argint(0, &ticks) < 0)
+    return -1;
+  if(argaddr(0, handler) < 0)
+    return -1;
+  
+  myproc()->ticks = ticks;
+  myproc()->handler = handler;
+
+  return 0;
+}
+
+// just return zero 
+uint64
+sys_sigreturn(void)
+{
+  return 0;
 }

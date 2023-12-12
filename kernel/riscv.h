@@ -323,6 +323,15 @@ r_ra()
   return x;
 }
 
+// read the current frame pointer
+static inline uint64
+r_fp()
+{
+  uint64 x;
+  asm volatile("mv %0, s0" : "=r" (x) );
+  return x;
+}
+
 // flush the TLB.
 static inline void
 sfence_vma()
@@ -330,7 +339,6 @@ sfence_vma()
   // the zero, zero means flush all TLB entries.
   asm volatile("sfence.vma zero, zero");
 }
-
 
 #define PGSIZE 4096 // bytes per page
 #define PGSHIFT 12  // bits of offset within a page
